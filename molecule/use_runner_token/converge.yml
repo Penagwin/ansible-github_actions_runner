@@ -1,0 +1,17 @@
+---
+- name: Install runner_token Runner
+  user: ansible
+  hosts: all
+  become: yes
+  vars:
+    - runner_user: ansible
+    - github_account: penagwin
+    - github_repo: "ansible-github_actions_runner"
+    - use_runner_token: true
+    - runner_org: false
+    - registration_token: ""
+    - runner_state: "stopped"
+    
+  roles:
+    - robertdebock.epel
+    - ansible-github_actions_runner

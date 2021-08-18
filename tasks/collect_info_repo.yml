@@ -9,7 +9,8 @@
       method: POST
       status_code: 201
       force_basic_auth: yes
-    register: registration
+    register: _registration_token
+    when: not use_runner_token
     run_once: yes
     tags:
       - install
@@ -25,6 +26,7 @@
       status_code: 200
       force_basic_auth: yes
     register: registered_runners
+    when: not use_runner_token
     run_once: yes
     tags:
       - install

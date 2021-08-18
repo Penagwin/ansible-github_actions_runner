@@ -93,56 +93,64 @@
     marker_end: "# END ANSIBLE MANAGED BLOCK"
   when: custom_env is defined
 
+- set_fact: 
+    skip_registration: runner_name in registered_runners.json.runners|map(attribute='name')|list and not use_runner_token
+  when: not use_runner_token
+
+- set_fact: 
+    registration_token: _registration_token.json.token
+  when: not use_runner_token
+
 - name: Register runner (if new installation) for repo
   command:
     "{{ runner_dir }}/./config.sh --url {{ github_url }}/{{ github_owner | default(github_account) }}/{{ github_repo }} \
-    --token {{ registration.json.token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended \
+    --token {{ registration_token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended \
     {{ runner_extra_config_args }}"
   args:
     chdir: "{{ runner_dir }}"
   become: yes
   become_user: "{{ runner_user }}"
   no_log: "{{ hide_sensitive_logs | bool }}"
-  when: runner_name not in registered_runners.json.runners|map(attribute='name')|list and not runner_org
+  when: not skip_registration and not runner_org
   tags:
     - install
 
 - name: Register runner (if new installation) for organization
   command:
     "{{ runner_dir }}/./config.sh --url {{ github_url }}/{{ github_owner | default(github_account) }} \
-    --token {{ registration.json.token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended"
+    --token {{ registration_token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended"
   args:
     chdir: "{{ runner_dir }}"
   become: yes
   become_user: "{{ runner_user }}"
   no_log: "{{ hide_sensitive_logs | bool }}"
-  when: runner_name not in registered_runners.json.runners|map(attribute='name')|list and runner_org
+  when: not skip_registration and runner_org
   tags:
     - install
 
 - name: Replace registered runner for repo
   command:
     "{{ runner_dir }}/config.sh --url {{ github_url }}/{{ github_owner | default(github_account) }}/{{ github_repo }} \
-    --token {{ registration.json.token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended --replace"
+    --token {{ registration_token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended --replace"
   args:
     chdir: "{{ runner_dir }}"
   become: yes
   become_user: "{{ runner_user }}"
   no_log: "{{ hide_sensitive_logs | bool }}"
-  when: runner_name in registered_runners.json.runners|map(attribute='name')|list and reinstall_runner and not runner_org
+  when: skip_registration and reinstall_runner and not runner_org
   tags:
     - install
 
 - name: Replace registered runner for organization
   command:
     "{{ runner_dir }}/config.sh --url {{ github_url }}/{{ github_owner | default(github_account) }} \
-    --token {{ registration.json.token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended --replace"
+    --token {{ registration_token }} --name {{ runner_name }} --labels {{ runner_labels | join(',') }} --unattended --replace"
   args:
     chdir: "{{ runner_dir }}"
   become: yes
   become_user: "{{ runner_user }}"
   no_log: "{{ hide_sensitive_logs | bool }}"
-  when: runner_name in registered_runners.json.runners|map(attribute='name')|list and reinstall_runner and runner_org
+  when: skip_registration and reinstall_runner and runner_org
   tags:
     - install
 

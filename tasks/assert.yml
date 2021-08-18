@@ -5,6 +5,7 @@
       - github_account is defined
     fail_msg: "github_account is not defined"
   run_once: yes
+  when: not use_runner_token
   tags:
     - install
     - uninstall
@@ -16,6 +17,7 @@
       - access_token | length > 0
     fail_msg: "access_token was not found or is using an invalid format."
   run_once: yes
+  when: not use_runner_token
   tags:
     - install
     - uninstall
@@ -26,6 +28,19 @@
       - runner_org == True or runner_org == False
     fail_msg: "runner_org should be a boolean value"
   run_once: yes
+  when: not use_runner_token
+  tags:
+    - install
+    - uninstall
+
+- name: Check registration_token variable (RUN ONCE)
+  assert:
+    that:
+      - registration_token is defined
+      - registration_token | length > 0
+    fail_msg: "registration_token was not found or is using an invalid format."
+  run_once: yes
+  when: use_runner_token
   tags:
     - install
     - uninstall

@@ -1,0 +1,25 @@
+---
+- name: validate runner_token runners
+  user: ansible
+  hosts: all
+  gather_facts: yes
+  become: yes
+  vars:
+    - runner_user: ansible
+    - github_account: monolithprojects-testorg
+    - runner_org: no
+    - github_api_url: "https://api.github.com"
+    - registration_token: ""
+    - runner_name: "{{ ansible_hostname }}"
+    - use_runner_token: true
+  tasks:
+    - name: Give the runners a minute
+      pause:
+        seconds: 30
+
+    - name: get service facts
+      service_facts:
+
+    - name: try to work out how to access the service
+      debug:
+        var: ansible_facts.services
